@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>People Detection</title>
+  <style>
+    #personCount {
+      font-size: 48px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <video id="webcam" autoplay muted width="1280" height="960"></video>
+  <!-- Element to display the count -->
+  <p id="personCount">People detected: 0</p>
+
+  <!-- Load TensorFlow.js and the COCO-SSD model -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <script>
+    const video = document.getElementById('webcam');
+    const personCountDisplay = document.getElementById('personCount');
+
+    // Access the webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((err) => console.error('Error accessing webcam:', err));
+
+    // Load the model and process frames to detect people
+    async function detectPeople() {
+      const model = await cocoSsd.load();
+      setInterval(async () => {
+        const predictions = await model.detect(video);
+        const personCount = predictions.filter(p => p.class === 'person').length;
+        // Update the count on the webpage
+        personCountDisplay.textContent = `People detected: ${personCount}`;
+      }, 1000); // Run detection every second
+    }
+
+    video.onloadeddata = detectPeople;
+  </script>
+</body>
+</html>
